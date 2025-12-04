@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>端口代理管理器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "微软雅黑", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            font-weight: 600;
+        }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        h2 {
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 14px;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: #f8f9ff;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border 0.3s;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        #status {
+            margin-top: 20px;
+            padding: 14px;
+            border-radius: 6px;
+            display: none;
+            font-weight: 500;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-tcp {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge-http {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .badge-ssh {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        small {
+            color: #999;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🚀 端口代理管理器</h1>
+        <p class="subtitle">管理 Windows Netsh 端口转发和 FRP 代理配置</p>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('add')">➕ 添加规则</button>
+            <button class="tab" onclick="switchTab('netsh')">🔌 Netsh 规则</button>
+            <button class="tab" onclick="switchTab('frp')">📡 FRP 代理</button>
+            <button class="tab" onclick="switchTab('control')">⚙️ FRP 控制</button>
+        </div>
+
+        <!-- 添加规则 Tab -->
+        <div id="tab-add" class="tab-content active">
+            <h2>添加新规则</h2>
+            <form id="addForm">
+                <div class="row">
+                    <div class="form-group">
+                        <label>名称前缀</label>
+                        <input type="text" id="name" required placeholder="例如: yzwj">
+                        <small>将用于生成代理名称: [name]-manager-[地址]-[端口]</small>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label>监听端口（本地）</label>
+                        <input type="number" id="listenPort" required placeholder="例如: 8080">
+                    </div>
+                    <div class="form-group">
+                        <label>目标地址（IP）</label>
+                        <input type="text" id="connectAddr" required placeholder="例如: 192.168.1.100">
+                    </div>
+                    <div class="form-group">
+                        <label>目标端口</label>
+                        <input type="number" id="connectPort" required placeholder="例如: 80">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label>远程端口（FRPS 公网端口）</label>
+                        <input type="number" id="remotePort" required placeholder="例如: 18080">
+                        <small>在公网 FRPS 服务器上暴露的端口</small>
+                    </div>
+                </div>
+
+                <button type="submit">✅ 添加规则并更新配置</button>
+            </form>
+            <div id="status"></div>
+        </div>
+
+        <!-- Netsh 规则 Tab -->
+        <div id="tab-netsh" class="tab-content">
+            <h2>当前 Netsh 端口转发规则</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>监听地址</th>
+                        <th>监听端口</th>
+                        <th>目标地址</th>
+                        <th>目标端口</th>
+                    </tr>
+                </thead>
+                <tbody id="rulesTable">
+                    <tr>
+                        <td colspan="4" style="text-align: center;">加载中...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- FRP 代理 Tab -->
+        <div id="tab-frp" class="tab-content">
+            <h2>本机已配置的 FRP 代理</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>名称</th>
+                        <th>类型</th>
+                        <th>本地地址</th>
+                        <th>本地端口</th>
+                        <th>远程端口</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="frpTable">
+                    <tr>
+                        <td colspan="6" style="text-align: center;">加载中...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- FRP 控制 Tab -->
+        <div id="tab-control" class="tab-content">
+            <h2>FRP 进程控制</h2>
+
+            <div style="background: #f8f9ff; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h3 style="margin-bottom: 15px; color: #667eea;">📊 当前状态</h3>
+                <div id="frpcStatus" style="font-size: 16px;">
+                    <p>🔄 正在检查...</p>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <button onclick="controlFrpc('start')"
+                    style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                    ▶️ 启动 FRP
+                </button>
+                <button onclick="controlFrpc('stop')"
+                    style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
+                    ⏹️ 停止 FRP
+                </button>
+                <button onclick="controlFrpc('restart')"
+                    style="background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);">
+                    🔄 重启 FRP
+                </button>
+                <button onclick="updateFrpcStatus()"
+                    style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);">
+                    🔍 刷新状态
+                </button>
+            </div>
+
+            <div
+                style="margin-top: 30px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+                <strong>💡 提示：</strong>
+                <ul style="margin: 10px 0 0 20px;">
+                    <li>启动：启动 FRP 客户端进程</li>
+                    <li>停止：停止正在运行的 FRP 进程</li>
+                    <li>重启：先停止再启动 FRP 进程（添加/删除代理后会自动重启）</li>
+                    <li>日志文件保存在：frpc.log</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+
+            // Load data for the tab
+            if (tab === 'netsh') loadRules();
+            if (tab === 'frp') loadFrpProxies();
+            if (tab === 'control') updateFrpcStatus();
+        }
+
+        // Fetch default name prefix
+        fetch('/api/default-name')
+            .then(res => res.json())
+            .then(data => {
+                if (data.name) {
+                    document.getElementById('name').value = data.name;
+                }
+            });
+
+        // Fetch netsh rules
+        function loadRules() {
+            fetch('/api/rules')
+                .then(res => res.json())
+                .then(rules => {
+                    const tbody = document.getElementById('rulesTable');
+                    tbody.innerHTML = '';
+                    if (!rules || rules.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">暂无规则</td></tr>';
+                        return;
+                    }
+                    rules.forEach(rule => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${rule.listenAddress}</td>
+                            <td>${rule.listenPort}</td>
+                            <td>${rule.connectAddress}</td>
+                            <td>${rule.connectPort}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                });
+        }
+
+        // Fetch FRP proxies
+        function loadFrpProxies() {
+            fetch('/api/frp-proxies')
+                .then(res => res.json())
+                .then(proxies => {
+                    const tbody = document.getElementById('frpTable');
+                    tbody.innerHTML = '';
+                    if (!proxies || proxies.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">暂无代理配置</td></tr>';
+                        return;
+                    }
+                    proxies.forEach(proxy => {
+                        const tr = document.createElement('tr');
+                        const typeBadge = `<span class="badge badge-${proxy.type}">${proxy.type.toUpperCase()}</span>`;
+                        const deleteBtn = `<button onclick="deleteProxy('${proxy.name}')" style="padding: 6px 12px; font-size: 14px; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">🗑️ 删除</button>`;
+                        tr.innerHTML = `
+                            <td>${proxy.name}</td>
+                            <td>${typeBadge}</td>
+                            <td>${proxy.localIP}</td>
+                            <td>${proxy.localPort}</td>
+                            <td>${proxy.remotePort}</td>
+                            <td>${deleteBtn}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                });
+        }
+
+        // Delete FRP proxy
+        async function deleteProxy(name) {
+            if (!confirm(`确定要删除代理 "${name}" 吗？\n\n这将从 frpc.toml 中删除该配置并重启 FRP 服务。`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/frp-proxies/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name })
+                });
+
+                if (res.ok) {
+                    alert('✅ 代理删除成功！FRP 服务已重启。');
+                    loadFrpProxies(); // Reload the table
+                } else {
+                    const err = await res.text();
+                    throw new Error(err);
+                }
+            } catch (err) {
+                alert('❌ 删除失败: ' + err.message);
+            }
+        }
+
+        // Handle form submit
+        document.getElementById('addForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const statusDiv = document.getElementById('status');
+            statusDiv.style.display = 'none';
+            statusDiv.className = '';
+
+            const data = {
+                name: document.getElementById('name').value,
+                listenPort: document.getElementById('listenPort').value,
+                connectAddr: document.getElementById('connectAddr').value,
+                connectPort: document.getElementById('connectPort').value,
+                remotePort: document.getElementById('remotePort').value
+            };
+
+            try {
+                const res = await fetch('/api/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (res.ok) {
+                    statusDiv.textContent = '✅ 规则添加成功！FRP 服务已重启。';
+                    statusDiv.className = 'success';
+                    statusDiv.style.display = 'block';
+                    // Optional: clear form or reload data
+                } else {
+                    const err = await res.text();
+                    throw new Error(err);
+                }
+            } catch (err) {
+                statusDiv.textContent = '❌ 错误: ' + err.message;
+                statusDiv.className = 'error';
+                statusDiv.style.display = 'block';
+            }
+        });
+
+        // ========================================
+        // FRP Control Functions
+        // ========================================
+
+        // Update FRP status
+        async function updateFrpcStatus() {
+            const statusDiv = document.getElementById('frpcStatus');
+            statusDiv.innerHTML = '<p>🔄 正在检查...</p>';
+
+            try {
+                const res = await fetch('/api/frpc/status');
+                const status = await res.json();
+
+                if (status.running) {
+                    statusDiv.innerHTML = `
+                        <p style="color: #28a745; font-weight: bold;">✅ FRP 正在运行</p>
+                        <p style="margin-top: 10px;">进程 ID: ${status.pid}</p>
+                    `;
+                } else {
+                    statusDiv.innerHTML = `
+                        <p style="color: #dc3545; font-weight: bold;">⏹️ FRP 未运行</p>
+                        ${status.message ? `<p style="margin-top: 10px;">${status.message}</p>` : ''}
+                        ${status.error ? `<p style="margin-top: 10px; color: #dc3545;">错误: ${status.error}</p>` : ''}
+                    `;
+                }
+            } catch (err) {
+                statusDiv.innerHTML = `<p style="color: #dc3545;">❌ 获取状态失败: ${err.message}</p>`;
+            }
+        }
+
+        // Control FRP (start/stop/restart)
+        async function controlFrpc(action) {
+            const actionNames = {
+                'start': '启动',
+                'stop': '停止',
+                'restart': '重启'
+            };
+
+            const actionName = actionNames[action];
+
+            if (!confirm(`确定要${actionName} FRP 进程吗？`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/frpc/${action}`, {
+                    method: 'POST'
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    alert(`✅ ${data.message}`);
+                    updateFrpcStatus(); // Refresh status
+                } else {
+                    const err = await res.text();
+                    throw new Error(err);
+                }
+            } catch (err) {
+                alert(`❌ ${actionName}失败: ${err.message}`);
+                updateFrpcStatus(); // Refresh status anyway
+            }
+        }
+    </script>
+</body>
+
+</html>

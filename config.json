@@ -1,0 +1,9 @@
+{
+    "port": 8080,
+    "frpcTomlPath": "frpc.toml",
+    "frpcExePath": "frpc.exe",
+    "autoRegisterToFrp": true,
+    "webUIProxyName": "portproxy-manager-web",
+    "webUIRemotePort": 18080,
+    "name": "yzwj"
+}

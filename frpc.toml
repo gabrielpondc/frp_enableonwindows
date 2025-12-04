@@ -1,0 +1,191 @@
+serverAddr = "nas.computercau.top"
+serverPort = 7910
+auth.token = "12345"
+
+[[proxies]]
+name = "yzwj-ssh-10.37.29.85-22"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 63122
+remotePort = 18882
+
+[[proxies]]
+name = "yzwj-ssh-10.37.28.136-22"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 63123
+remotePort = 11007
+
+[[proxies]]
+name = "yzwj-service-10.37.28.136-10288"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 10288
+remotePort = 16692
+
+[[proxies]]
+name = "yzwj-service-10.37.28.136-7862"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 17862
+remotePort = 12715
+
+[[proxies]]
+name = "yzwj-service-10.37.28.135-8066"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 18066
+remotePort = 10763
+
+[[proxies]]
+name = "yzwj-web-10.37.28.136-18080"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 18080
+remotePort = 10645
+
+[[proxies]]
+name = "yzwj-service-10.37.28.136-19992"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 19992
+remotePort = 17753
+
+[[proxies]]
+name = "yzwj-service-10.37.28.15-5013"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 15013
+remotePort = 14572
+
+[[proxies]]
+name = "yzwj-service-10.37.29.250-2883"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 12883
+remotePort = 14468
+
+[[proxies]]
+name = "yzwj-service-10.37.28.16-9992"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 29992
+remotePort = 19452
+
+[[proxies]]
+name = "yzwj-service-10.37.28.136-9992"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 39992
+remotePort = 19100
+
+[[proxies]]
+name = "yzwj-service-10.37.28.135-10285"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 63142
+remotePort = 10430
+
+[[proxies]]
+name = "yzwj-service-10.37.28.135-33717"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 33717
+remotePort = 12162
+
+[[proxies]]
+name = "yzwj-ssh-10.37.28.135-22"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 10222
+remotePort = 19742
+
+[[proxies]]
+name = "yzwj-web-10.37.28.136-18088"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 18088
+remotePort = 11118
+
+[[proxies]]
+name = "yzwj-service-10.37.28.136-4800"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 4800
+remotePort = 19701
+
+[[proxies]]
+name = "yzwj-web-10.37.28.136-19180"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 19180
+remotePort = 10849
+
+[[proxies]]
+name = "yzwj-web-10.37.28.135-18080"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 18481
+remotePort = 12670
+
+[[proxies]]
+name = "yzwj-web-10.37.28.136-10286"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 18486
+remotePort = 10850
+
+[[proxies]]
+name = "yzwj-pg-10.37.28.135-5432"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 15432
+remotePort = 10532
+
+[[proxies]]
+name = "yzwj-blj-172.22.2.4-443"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 15424
+remotePort = 10524
+[[proxies]]
+name = "yzwj-blj-172.22.2.4-3389"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 3389
+remotePort = 3389
+[[proxies]]
+name = "yzwj-blj-172.22.2.5-443"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 15425
+remotePort = 10525
+
+[[proxies]]
+name = "yzwj-web-10.37.28.135-8011"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 18011
+remotePort = 12811
+
+[[proxies]]
+name = "yzwj-bi-10.37.28.136-10299"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 18999
+remotePort = 12899
+
+[[proxies]]
+name = "yzwj-aiplateform-10.37.29.85-63100"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 63100
+remotePort = 12813
+
+
+[[proxies]]
+name = "portproxy-manager-web"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 8080
+remotePort = 18080
