@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
@@ -51,6 +52,7 @@ type AddRuleRequest struct {
 	RemotePort  string `json:"remotePort"`
 	Type        string `json:"type"`
 	Name        string `json:"name"`
+	Manager     string `json:"manager"`
 }
 
 var (
@@ -387,8 +389,14 @@ func appendToFrpc(req AddRuleRequest) error {
 	}
 	defer f.Close()
 
-	// New naming convention: [name]-manager-[connectAddr]-[connectPort]
-	proxyName := fmt.Sprintf("%s-manager-%s-%s", req.Name, req.ConnectAddr, req.ConnectPort)
+	// New naming convention: [name]-[manager]-[connectAddr]-[connectPort]
+	// Name is optional
+	var proxyName string
+	if req.Name != "" {
+		proxyName = fmt.Sprintf("%s-%s-%s-%s", req.Name, req.Manager, req.ConnectAddr, req.ConnectPort)
+	} else {
+		proxyName = fmt.Sprintf("%s-%s-%s", req.Manager, req.ConnectAddr, req.ConnectPort)
+	}
 
 	var sb strings.Builder
 	sb.WriteString("\n[[proxies]]\n")
@@ -457,6 +465,11 @@ func deleteFrpProxy(proxyName string) error {
 // FRP Process Management
 // ========================================
 
+// getFrpcExeName extracts the executable name from frpcExePath
+func getFrpcExeName() string {
+	return filepath.Base(config.FrpcExePath)
+}
+
 // getFrpcProcess finds the running frpc process
 func getFrpcProcess() (*os.Process, error) {
 	if runtime.GOOS != "windows" {
@@ -464,8 +477,11 @@ func getFrpcProcess() (*os.Process, error) {
 		return nil, nil
 	}
 
-	// Use tasklist to find frpc.exe
-	cmd := exec.Command("tasklist", "/FI", "IMAGENAME eq frpc.exe", "/FO", "CSV", "/NH")
+	// Get the executable name from config
+	exeName := getFrpcExeName()
+
+	// Use tasklist to find the process
+	cmd := exec.Command("tasklist", "/FI", fmt.Sprintf("IMAGENAME eq %s", exeName), "/FO", "CSV", "/NH")
 	hideWindow(cmd)
 	output, err := cmd.Output()
 	if err != nil {
@@ -480,7 +496,7 @@ func getFrpcProcess() (*os.Process, error) {
 	}
 
 	for _, record := range records {
-		if len(record) >= 2 && record[0] == "frpc.exe" {
+		if len(record) >= 2 && record[0] == exeName {
 			pidStr := record[1]
 			var pid int
 			if _, err := fmt.Sscanf(pidStr, "%d", &pid); err != nil {
@@ -514,14 +530,17 @@ func stopFrpc() error {
 		return nil // Already stopped
 	}
 
+	// Get the executable name from config
+	exeName := getFrpcExeName()
+
 	// Kill the process using taskkill for more reliable termination
-	cmd := exec.Command("taskkill", "/F", "/IM", "frpc.exe")
+	cmd := exec.Command("taskkill", "/F", "/IM", exeName)
 	hideWindow(cmd)
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("停止进程失败: %v", err)
 	}
 
-	log.Println("frpc 进程已停止")
+	log.Printf("%s 进程已停止", exeName)
 	return nil
 }
 

@@ -230,10 +230,30 @@
             <form id="addForm">
                 <div class="row">
                     <div class="form-group">
-                        <label>名称前缀</label>
-                        <input type="text" id="name" required placeholder="例如: yzwj">
-                        <small>将用于生成代理名称: [name]-manager-[地址]-[端口]</small>
+                        <label>名称前缀（可选）</label>
+                        <input type="text" id="name" placeholder="例如: yzwj">
+                        <small>留空则不使用前缀</small>
                     </div>
+                    <div class="form-group">
+                        <label>Manager 类型</label>
+                        <select id="managerType" onchange="toggleCustomManager()">
+                            <option value="http">http</option>
+                            <option value="https">https</option>
+                            <option value="ssh">ssh</option>
+                            <option value="ftp">ftp</option>
+                            <option value="custom">自定义...</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="customManagerGroup" style="display: none;">
+                        <label>自定义 Manager</label>
+                        <input type="text" id="customManager" placeholder="输入自定义类型">
+                    </div>
+                </div>
+                <div
+                    style="margin-bottom: 20px; padding: 12px; background: #f0f7ff; border-left: 4px solid #667eea; border-radius: 4px;">
+                    <strong>代理名称格式：</strong>
+                    <span id="namePreview"
+                        style="color: #667eea; font-family: monospace;">[name]-[manager]-[地址]-[端口]</span>
                 </div>
 
                 <div class="row">
@@ -451,6 +471,45 @@
             }
         }
 
+        // Toggle custom manager input
+        function toggleCustomManager() {
+            const managerType = document.getElementById('managerType').value;
+            const customGroup = document.getElementById('customManagerGroup');
+            if (managerType === 'custom') {
+                customGroup.style.display = 'block';
+            } else {
+                customGroup.style.display = 'none';
+            }
+            updateNamePreview();
+        }
+
+        // Update name preview
+        function updateNamePreview() {
+            const name = document.getElementById('name').value.trim();
+            const managerType = document.getElementById('managerType').value;
+            const customManager = document.getElementById('customManager').value.trim();
+            const connectAddr = document.getElementById('connectAddr').value.trim() || '地址';
+            const connectPort = document.getElementById('connectPort').value.trim() || '端口';
+
+            let manager = managerType === 'custom' ? (customManager || 'custom') : managerType;
+            let parts = [];
+
+            if (name) {
+                parts.push(name);
+            }
+            parts.push(manager);
+            parts.push(connectAddr);
+            parts.push(connectPort);
+
+            document.getElementById('namePreview').textContent = parts.join('-');
+        }
+
+        // Add event listeners for live preview
+        document.getElementById('name').addEventListener('input', updateNamePreview);
+        document.getElementById('connectAddr').addEventListener('input', updateNamePreview);
+        document.getElementById('connectPort').addEventListener('input', updateNamePreview);
+        document.getElementById('customManager').addEventListener('input', updateNamePreview);
+
         // Handle form submit
         document.getElementById('addForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -458,8 +517,21 @@
             statusDiv.style.display = 'none';
             statusDiv.className = '';
 
+            const managerType = document.getElementById('managerType').value;
+            const manager = managerType === 'custom'
+                ? document.getElementById('customManager').value.trim()
+                : managerType;
+
+            if (managerType === 'custom' && !manager) {
+                statusDiv.textContent = '❌ 请输入自定义 Manager 类型';
+                statusDiv.className = 'error';
+                statusDiv.style.display = 'block';
+                return;
+            }
+
             const data = {
-                name: document.getElementById('name').value,
+                name: document.getElementById('name').value.trim(),
+                manager: manager,
                 listenPort: document.getElementById('listenPort').value,
                 connectAddr: document.getElementById('connectAddr').value,
                 connectPort: document.getElementById('connectPort').value,
@@ -488,6 +560,9 @@
                 statusDiv.style.display = 'block';
             }
         });
+
+        // Initialize preview
+        updateNamePreview();
 
         // ========================================
         // FRP Control Functions
