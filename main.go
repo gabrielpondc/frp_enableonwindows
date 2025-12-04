@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -471,38 +472,30 @@ func getFrpcProcess() (*os.Process, error) {
 		return nil, err
 	}
 
-	// Parse output to check if process exists
-	if !strings.Contains(string(output), "frpc.exe") {
-		return nil, nil // Process not found
-	}
-
-	// Get PID using wmic
-	cmd = exec.Command("wmic", "process", "where", "name='frpc.exe'", "get", "ProcessId")
-	hideWindow(cmd)
-	output, err = cmd.Output()
+	// Parse CSV output
+	reader := csv.NewReader(strings.NewReader(string(output)))
+	records, err := reader.ReadAll()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("parsing tasklist output: %v", err)
 	}
 
-	lines := strings.Split(string(output), "\n")
-	if len(lines) < 2 {
-		return nil, nil
+	for _, record := range records {
+		if len(record) >= 2 && record[0] == "frpc.exe" {
+			pidStr := record[1]
+			var pid int
+			if _, err := fmt.Sscanf(pidStr, "%d", &pid); err != nil {
+				continue
+			}
+
+			process, err := os.FindProcess(pid)
+			if err != nil {
+				return nil, err
+			}
+			return process, nil
+		}
 	}
 
-	pidStr := strings.TrimSpace(lines[1])
-	if pidStr == "" {
-		return nil, nil
-	}
-
-	var pid int
-	fmt.Sscanf(pidStr, "%d", &pid)
-
-	process, err := os.FindProcess(pid)
-	if err != nil {
-		return nil, err
-	}
-
-	return process, nil
+	return nil, nil // Process not found
 }
 
 // stopFrpc stops the running frpc process
