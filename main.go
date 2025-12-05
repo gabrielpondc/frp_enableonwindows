@@ -59,6 +59,22 @@ var (
 	config Config
 )
 
+// corsMiddleware adds CORS headers to all responses
+func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next(w, r)
+	}
+}
+
 func main() {
 	// Load configuration
 	if err := loadConfig(); err != nil {
@@ -86,16 +102,17 @@ func main() {
 		http.ServeFile(w, r, "index.html")
 	})
 
-	// API endpoints
-	http.HandleFunc("/api/rules", handleGetRules)
-	http.HandleFunc("/api/add", handleAddRule)
-	http.HandleFunc("/api/default-name", handleGetDefaultName)
-	http.HandleFunc("/api/frp-proxies", handleGetFrpProxies)
-	http.HandleFunc("/api/frp-proxies/delete", handleDeleteFrpProxy)
-	http.HandleFunc("/api/frpc/start", handleStartFrpc)
-	http.HandleFunc("/api/frpc/stop", handleStopFrpc)
-	http.HandleFunc("/api/frpc/restart", handleRestartFrpc)
-	http.HandleFunc("/api/frpc/status", handleFrpcStatus)
+	// API endpoints with CORS middleware
+	http.HandleFunc("/api/rules", corsMiddleware(handleGetRules))
+	http.HandleFunc("/api/add", corsMiddleware(handleAddRule))
+	http.HandleFunc("/api/netsh/delete", corsMiddleware(handleDeleteNetshRule))
+	http.HandleFunc("/api/default-name", corsMiddleware(handleGetDefaultName))
+	http.HandleFunc("/api/frp-proxies", corsMiddleware(handleGetFrpProxies))
+	http.HandleFunc("/api/frp-proxies/delete", corsMiddleware(handleDeleteFrpProxy))
+	http.HandleFunc("/api/frpc/start", corsMiddleware(handleStartFrpc))
+	http.HandleFunc("/api/frpc/stop", corsMiddleware(handleStopFrpc))
+	http.HandleFunc("/api/frpc/restart", corsMiddleware(handleRestartFrpc))
+	http.HandleFunc("/api/frpc/status", corsMiddleware(handleFrpcStatus))
 
 	addr := fmt.Sprintf(":%d", config.Port)
 	log.Printf("服务器启动在 http://localhost:%d", config.Port)
@@ -239,6 +256,29 @@ func handleAddRule(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"status": "success"})
 }
 
+func handleDeleteNetshRule(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req struct {
+		ListenPort string `json:"listenPort"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := deleteNetshRule(req.ListenPort); err != nil {
+		http.Error(w, "删除 netsh 规则失败: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"status": "success"})
+}
+
 func getNetshRules() ([]Rule, error) {
 	if runtime.GOOS != "windows" {
 		return mockRules(), nil
@@ -270,6 +310,20 @@ func addNetshRule(listenPort, connectAddr, connectPort string) error {
 	return cmd.Run()
 }
 
+func deleteNetshRule(listenPort string) error {
+	if runtime.GOOS != "windows" {
+		log.Printf("[模拟] netsh interface portproxy delete v4tov4 listenaddress=0.0.0.0 listenport=%s", listenPort)
+		return nil
+	}
+
+	cmd := exec.Command("netsh", "interface", "portproxy", "delete", "v4tov4",
+		"listenaddress=0.0.0.0",
+		"listenport="+listenPort,
+	)
+	hideWindow(cmd)
+	return cmd.Run()
+}
+
 func parseNetshOutput(output string) []Rule {
 	var rules []Rule
 	lines := strings.Split(output, "\n")
@@ -277,8 +331,15 @@ func parseNetshOutput(output string) []Rule {
 	for _, line := range lines {
 		fields := strings.Fields(line)
 		if len(fields) == 4 {
-			// Filter out headers
-			if fields[0] == "Address" || fields[0] == "---------------" || strings.HasPrefix(fields[0], "Listen") {
+			// Filter out headers (both English and Chinese)
+			// English headers: "Address", "Listen", "---------------"
+			// Chinese headers: "侦听", "地址", "端口", "连接到", "ipv4:"
+			if fields[0] == "Address" ||
+				fields[0] == "---------------" ||
+				strings.HasPrefix(fields[0], "Listen") ||
+				fields[0] == "侦听" ||
+				fields[0] == "地址" ||
+				strings.Contains(line, "ipv4:") {
 				continue
 			}
 			rules = append(rules, Rule{

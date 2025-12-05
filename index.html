@@ -6,6 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>端口代理管理器</title>
     <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-body: #f3f4f6;
+            --bg-card: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,59 +27,85 @@
         }
 
         body {
-            font-family: "Microsoft YaHei", "微软雅黑", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.5;
+            padding: 40px 20px;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            background: var(--bg-card);
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Icon Styles */
+        .icon {
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            vertical-align: text-bottom;
+            fill: currentColor;
+        }
+
+        .icon-lg {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
         }
 
         h1 {
-            color: #667eea;
-            margin-bottom: 10px;
-            font-size: 32px;
+            display: flex;
+            align-items: center;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 8px;
         }
 
         .subtitle {
-            color: #666;
-            margin-bottom: 30px;
+            color: var(--text-muted);
+            margin-bottom: 32px;
             font-size: 14px;
         }
 
+        /* Tabs */
         .tabs {
             display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #eee;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 32px;
+            gap: 24px;
         }
 
         .tab {
-            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 16px;
-            color: #666;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
-        }
-
-        .tab.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
-            font-weight: 600;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-muted);
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
         }
 
         .tab:hover {
-            color: #667eea;
+            color: var(--text-main);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab.active .icon {
+            fill: var(--primary);
         }
 
         .tab-content {
@@ -74,139 +114,317 @@
 
         .tab-content.active {
             display: block;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         h2 {
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 10px;
-            margin-top: 30px;
+            font-size: 18px;
+            font-weight: 600;
             margin-bottom: 20px;
-            color: #333;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
         }
 
+        /* Tables */
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        th,
-        td {
-            text-align: left;
-            padding: 14px;
-            border-bottom: 1px solid #eee;
+            font-size: 14px;
         }
 
         th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            font-weight: 600;
+            text-align: left;
+            padding: 12px 16px;
+            background-color: #f9fafb;
+            color: var(--text-muted);
+            font-weight: 500;
+            border-bottom: 1px solid var(--border);
         }
 
-        tr:hover {
-            background: #f8f9ff;
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-main);
         }
 
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Forms */
         .form-group {
             margin-bottom: 20px;
         }
 
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
+            font-size: 14px;
             font-weight: 500;
-            color: #333;
+            color: var(--text-main);
         }
 
         input,
         select {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
             border-radius: 6px;
             font-size: 14px;
-            transition: border 0.3s;
+            color: var(--text-main);
+            background-color: #fff;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         input:focus,
         select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
+        /* Buttons */
         button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 14px 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
             border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid transparent;
+            transition: all 0.2s;
         }
 
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        /* Primary Button (Default) */
+        button[type="submit"] {
+            background-color: var(--primary);
+            color: white;
         }
 
-        button:active {
-            transform: translateY(0);
+        button[type="submit"]:hover {
+            background-color: var(--primary-hover);
         }
 
+        /* Action Buttons */
+        .btn-success {
+            background-color: white;
+            border-color: var(--border);
+            color: var(--text-main);
+        }
+
+        .btn-success:hover {
+            border-color: var(--success);
+            color: var(--success);
+            background-color: #ecfdf5;
+        }
+
+        .btn-success .icon {
+            fill: var(--success);
+        }
+
+        .btn-danger {
+            background-color: white;
+            border-color: var(--border);
+            color: var(--text-main);
+        }
+
+        .btn-danger:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+            background-color: #fef2f2;
+        }
+
+        .btn-danger .icon {
+            fill: var(--danger);
+        }
+
+        .btn-warning {
+            background-color: white;
+            border-color: var(--border);
+            color: var(--text-main);
+        }
+
+        .btn-warning:hover {
+            border-color: var(--warning);
+            color: var(--warning);
+            background-color: #fffbeb;
+        }
+
+        .btn-warning .icon {
+            fill: var(--warning);
+        }
+
+        .btn-info {
+            background-color: white;
+            border-color: var(--border);
+            color: var(--text-main);
+        }
+
+        .btn-info:hover {
+            border-color: var(--info);
+            color: var(--info);
+            background-color: #eff6ff;
+        }
+
+        .btn-info .icon {
+            fill: var(--info);
+        }
+
+        .btn-delete {
+            padding: 4px 10px;
+            font-size: 12px;
+            color: var(--danger);
+            background: transparent;
+            border: 1px solid var(--border);
+        }
+
+        .btn-delete:hover {
+            background-color: #fef2f2;
+            border-color: var(--danger);
+        }
+
+        .btn-delete .icon {
+            width: 14px;
+            height: 14px;
+            margin-right: 4px;
+            fill: var(--danger);
+        }
+
+        /* Layout Utilities */
         .row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
         }
 
+        /* Status & Alerts */
         #status {
             margin-top: 20px;
-            padding: 14px;
+            padding: 12px;
             border-radius: 6px;
+            font-size: 14px;
             display: none;
-            font-weight: 500;
         }
 
         .success {
-            background: #d4edda;
-            color: #155724;
-            border-left: 4px solid #28a745;
+            background-color: #ecfdf5;
+            color: #065f46;
         }
 
         .error {
-            background: #f8d7da;
-            color: #721c24;
-            border-left: 4px solid #dc3545;
+            background-color: #fef2f2;
+            color: #991b1b;
         }
 
+        .status-card {
+            background-color: #f9fafb;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .status-card h3 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .status-card p {
+            font-size: 16px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+
+        .status-card .icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+        }
+
+        .preview-box {
+            background-color: #f9fafb;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .preview-box strong {
+            color: var(--text-main);
+        }
+
+        .preview-box span {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            color: var(--primary);
+        }
+
+        .info-box {
+            margin-top: 32px;
+            padding: 16px;
+            background-color: #fffbeb;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #92400e;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+
+        .info-box li {
+            margin-bottom: 4px;
+        }
+
+        /* Badges */
         .badge {
             display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
+            padding: 2px 8px;
+            border-radius: 9999px;
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 500;
         }
 
         .badge-tcp {
-            background: #e3f2fd;
-            color: #1976d2;
+            background-color: #dbeafe;
+            color: #1e40af;
         }
 
         .badge-http {
-            background: #f3e5f5;
-            color: #7b1fa2;
+            background-color: #f3e8ff;
+            color: #6b21a8;
         }
 
         .badge-ssh {
-            background: #fff3e0;
-            color: #e65100;
+            background-color: #ffedd5;
+            color: #9a3412;
         }
 
         small {
-            color: #999;
+            display: block;
+            margin-top: 4px;
+            color: var(--text-muted);
             font-size: 12px;
         }
     </style>
@@ -214,19 +432,55 @@
 
 <body>
     <div class="container">
-        <h1>🚀 端口代理管理器</h1>
+        <h1>
+            <svg class="icon icon-lg" viewBox="0 0 24 24">
+                <path d="M13 2L3 14h9v8l10-12h-9l9-8z" />
+            </svg>
+            端口代理管理器
+        </h1>
         <p class="subtitle">管理 Windows Netsh 端口转发和 FRP 代理配置</p>
 
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('add')">➕ 添加规则</button>
-            <button class="tab" onclick="switchTab('netsh')">🔌 Netsh 规则</button>
-            <button class="tab" onclick="switchTab('frp')">📡 FRP 代理</button>
-            <button class="tab" onclick="switchTab('control')">⚙️ FRP 控制</button>
+            <button class="tab active" onclick="switchTab('add')">
+                <svg class="icon" viewBox="0 0 20 20">
+                    <path d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" />
+                </svg>
+                添加规则
+            </button>
+            <button class="tab" onclick="switchTab('netsh')">
+                <svg class="icon" viewBox="0 0 20 20">
+                    <path
+                        d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
+                </svg>
+                Netsh 规则
+            </button>
+            <button class="tab" onclick="switchTab('frp')">
+                <svg class="icon" viewBox="0 0 20 20">
+                    <path
+                        d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+                </svg>
+                FRP 代理
+            </button>
+            <button class="tab" onclick="switchTab('control')">
+                <svg class="icon" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                        d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"
+                        clip-rule="evenodd" />
+                </svg>
+                FRP 控制
+            </button>
         </div>
 
         <!-- 添加规则 Tab -->
         <div id="tab-add" class="tab-content active">
-            <h2>添加新规则</h2>
+            <h2>
+                <svg class="icon" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                        d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                        clip-rule="evenodd" />
+                </svg>
+                添加新规则
+            </h2>
             <form id="addForm">
                 <div class="row">
                     <div class="form-group">
@@ -249,11 +503,9 @@
                         <input type="text" id="customManager" placeholder="输入自定义类型">
                     </div>
                 </div>
-                <div
-                    style="margin-bottom: 20px; padding: 12px; background: #f0f7ff; border-left: 4px solid #667eea; border-radius: 4px;">
+                <div class="preview-box">
                     <strong>代理名称格式：</strong>
-                    <span id="namePreview"
-                        style="color: #667eea; font-family: monospace;">[name]-[manager]-[地址]-[端口]</span>
+                    <span id="namePreview">[name]-[manager]-[地址]-[端口]</span>
                 </div>
 
                 <div class="row">
@@ -279,14 +531,28 @@
                     </div>
                 </div>
 
-                <button type="submit">✅ 添加规则并更新配置</button>
+                <button type="submit">
+                    <svg class="icon" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    添加规则并更新配置
+                </button>
             </form>
             <div id="status"></div>
         </div>
 
         <!-- Netsh 规则 Tab -->
         <div id="tab-netsh" class="tab-content">
-            <h2>当前 Netsh 端口转发规则</h2>
+            <h2>
+                <svg class="icon" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                        d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z"
+                        clip-rule="evenodd" />
+                </svg>
+                当前 Netsh 端口转发规则
+            </h2>
             <table>
                 <thead>
                     <tr>
@@ -294,11 +560,12 @@
                         <th>监听端口</th>
                         <th>目标地址</th>
                         <th>目标端口</th>
+                        <th>操作</th>
                     </tr>
                 </thead>
                 <tbody id="rulesTable">
                     <tr>
-                        <td colspan="4" style="text-align: center;">加载中...</td>
+                        <td colspan="5" style="text-align: center;">加载中...</td>
                     </tr>
                 </tbody>
             </table>
@@ -306,7 +573,13 @@
 
         <!-- FRP 代理 Tab -->
         <div id="tab-frp" class="tab-content">
-            <h2>本机已配置的 FRP 代理</h2>
+            <h2>
+                <svg class="icon" viewBox="0 0 20 20">
+                    <path
+                        d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+                </svg>
+                本机已配置的 FRP 代理
+            </h2>
             <table>
                 <thead>
                     <tr>
@@ -328,38 +601,60 @@
 
         <!-- FRP 控制 Tab -->
         <div id="tab-control" class="tab-content">
-            <h2>FRP 进程控制</h2>
+            <h2>
+                <svg class="icon" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                        d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"
+                        clip-rule="evenodd" />
+                </svg>
+                FRP 进程控制
+            </h2>
 
-            <div style="background: #f8f9ff; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                <h3 style="margin-bottom: 15px; color: #667eea;">📊 当前状态</h3>
-                <div id="frpcStatus" style="font-size: 16px;">
-                    <p>🔄 正在检查...</p>
+            <div class="status-card">
+                <h3>当前状态</h3>
+                <div id="frpcStatus">
+                    <p>正在检查...</p>
                 </div>
             </div>
 
-            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <button onclick="controlFrpc('start')"
-                    style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
-                    ▶️ 启动 FRP
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <button onclick="controlFrpc('start')" class="btn-success">
+                    <svg class="icon" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    启动 FRP
                 </button>
-                <button onclick="controlFrpc('stop')"
-                    style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
-                    ⏹️ 停止 FRP
+                <button onclick="controlFrpc('stop')" class="btn-danger">
+                    <svg class="icon" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    停止 FRP
                 </button>
-                <button onclick="controlFrpc('restart')"
-                    style="background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);">
-                    🔄 重启 FRP
+                <button onclick="controlFrpc('restart')" class="btn-warning">
+                    <svg class="icon" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    重启 FRP
                 </button>
-                <button onclick="updateFrpcStatus()"
-                    style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);">
-                    🔍 刷新状态
+                <button onclick="updateFrpcStatus()" class="btn-info">
+                    <svg class="icon" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    刷新状态
                 </button>
             </div>
 
-            <div
-                style="margin-top: 30px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
-                <strong>💡 提示：</strong>
-                <ul style="margin: 10px 0 0 20px;">
+            <div class="info-box">
+                <strong>提示：</strong>
+                <ul>
                     <li>启动：启动 FRP 客户端进程</li>
                     <li>停止：停止正在运行的 FRP 进程</li>
                     <li>重启：先停止再启动 FRP 进程（添加/删除代理后会自动重启）</li>
@@ -402,20 +697,58 @@
                     const tbody = document.getElementById('rulesTable');
                     tbody.innerHTML = '';
                     if (!rules || rules.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">暂无规则</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">暂无规则</td></tr>';
                         return;
                     }
                     rules.forEach(rule => {
                         const tr = document.createElement('tr');
+                        const deleteBtn = `<button onclick="deleteNetshRule('${rule.listenPort}')" class="btn-delete"><svg class="icon" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>删除</button>`;
                         tr.innerHTML = `
                             <td>${rule.listenAddress}</td>
                             <td>${rule.listenPort}</td>
                             <td>${rule.connectAddress}</td>
                             <td>${rule.connectPort}</td>
+                            <td>${deleteBtn}</td>
                         `;
                         tbody.appendChild(tr);
                     });
                 });
+        }
+
+        // Delete Netsh rule
+        async function deleteNetshRule(listenPort) {
+            if (!confirm(`确定要删除监听端口 ${listenPort} 的 Netsh 规则吗？`)) {
+                return;
+            }
+
+            try {
+                console.log(`[DEBUG] Deleting netsh rule for port: ${listenPort}`);
+
+                const res = await fetch('/api/netsh/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ listenPort: listenPort })
+                });
+
+                console.log(`[DEBUG] Delete netsh response status: ${res.status}, ok: ${res.ok}`);
+
+                if (res.ok) {
+                    const contentType = res.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const data = await res.json();
+                        console.log(`[DEBUG] Delete netsh response:`, data);
+                    }
+                    alert('✅ Netsh 规则删除成功！');
+                    loadRules(); // Reload the table
+                } else {
+                    const err = await res.text();
+                    console.error(`[ERROR] Delete netsh failed:`, err);
+                    throw new Error(err);
+                }
+            } catch (err) {
+                console.error(`[ERROR] Delete netsh rule failed:`, err);
+                alert('❌ 删除失败: ' + err.message);
+            }
         }
 
         // Fetch FRP proxies
@@ -432,7 +765,7 @@
                     proxies.forEach(proxy => {
                         const tr = document.createElement('tr');
                         const typeBadge = `<span class="badge badge-${proxy.type}">${proxy.type.toUpperCase()}</span>`;
-                        const deleteBtn = `<button onclick="deleteProxy('${proxy.name}')" style="padding: 6px 12px; font-size: 14px; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">🗑️ 删除</button>`;
+                        const deleteBtn = `<button onclick="deleteProxy('${proxy.name}')" class="btn-delete"><svg class="icon" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>删除</button>`;
                         tr.innerHTML = `
                             <td>${proxy.name}</td>
                             <td>${typeBadge}</td>
@@ -448,25 +781,32 @@
 
         // Delete FRP proxy
         async function deleteProxy(name) {
-            if (!confirm(`确定要删除代理 "${name}" 吗？\n\n这将从 frpc.toml 中删除该配置并重启 FRP 服务。`)) {
+            if (!confirm(`确定要删除代理 "${name}" 吗？删除后 FRP 服务会自动重启。`)) {
                 return;
             }
 
             try {
-                const res = await fetch('/api/frp-proxies/delete', {
+                console.log(`[DEBUG] Deleting proxy: ${name}`);
+
+                // Fire and forget - don't wait for response since FRP will restart
+                fetch('/api/frp-proxies/delete', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name: name })
+                }).catch(err => {
+                    // Ignore network errors caused by FRP restart
+                    console.log('[DEBUG] Expected network error during FRP restart:', err.message);
                 });
 
-                if (res.ok) {
-                    alert('✅ 代理删除成功！FRP 服务已重启。');
-                    loadFrpProxies(); // Reload the table
-                } else {
-                    const err = await res.text();
-                    throw new Error(err);
-                }
+                // Immediately show success and reload after delay
+                alert('✅ 代理删除成功！FRP 正在重启，页面即将刷新...');
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 3000);
+
             } catch (err) {
+                console.error(`[ERROR] Delete proxy failed:`, err);
                 alert('❌ 删除失败: ' + err.message);
             }
         }
@@ -539,22 +879,30 @@
             };
 
             try {
-                const res = await fetch('/api/add', {
+                console.log('[DEBUG] Adding rule:', data);
+
+                // Fire and forget - don't wait for response since FRP will restart
+                fetch('/api/add', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
+                }).catch(err => {
+                    // Ignore network errors caused by FRP restart
+                    console.log('[DEBUG] Expected network error during FRP restart:', err.message);
                 });
 
-                if (res.ok) {
-                    statusDiv.textContent = '✅ 规则添加成功！FRP 服务已重启。';
-                    statusDiv.className = 'success';
-                    statusDiv.style.display = 'block';
-                    // Optional: clear form or reload data
-                } else {
-                    const err = await res.text();
-                    throw new Error(err);
-                }
+                // Immediately show success message
+                statusDiv.textContent = '✅ 规则添加成功！FRP 正在重启，请稍候...';
+                statusDiv.className = 'success';
+                statusDiv.style.display = 'block';
+
+                // Wait 3 seconds for FRP to restart, then reload the page
+                setTimeout(() => {
+                    window.location.reload();
+                }, 3000);
+
             } catch (err) {
+                console.error(`[ERROR] Add rule exception:`, err);
                 statusDiv.textContent = '❌ 错误: ' + err.message;
                 statusDiv.className = 'error';
                 statusDiv.style.display = 'block';
@@ -579,14 +927,20 @@
 
                 if (status.running) {
                     statusDiv.innerHTML = `
-                        <p style="color: #28a745; font-weight: bold;">✅ FRP 正在运行</p>
-                        <p style="margin-top: 10px;">进程 ID: ${status.pid}</p>
+                        <p style="color: #059669; font-weight: bold;">
+                            <svg class="icon" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                            FRP 正在运行
+                        </p>
+                        <p style="margin-top: 10px; color: var(--text-muted); font-size: 14px;">进程 ID: ${status.pid}</p>
                     `;
                 } else {
                     statusDiv.innerHTML = `
-                        <p style="color: #dc3545; font-weight: bold;">⏹️ FRP 未运行</p>
+                        <p style="color: #dc2626; font-weight: bold;">
+                            <svg class="icon" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+                            FRP 未运行
+                        </p>
                         ${status.message ? `<p style="margin-top: 10px;">${status.message}</p>` : ''}
-                        ${status.error ? `<p style="margin-top: 10px; color: #dc3545;">错误: ${status.error}</p>` : ''}
+                        ${status.error ? `<p style="margin-top: 10px; color: #dc2626;">错误: ${status.error}</p>` : ''}
                     `;
                 }
             } catch (err) {
@@ -609,19 +963,41 @@
             }
 
             try {
+                console.log(`[DEBUG] Sending ${action} request to /api/frpc/${action}`);
+
                 const res = await fetch(`/api/frpc/${action}`, {
-                    method: 'POST'
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
                 });
 
+                console.log(`[DEBUG] Response status: ${res.status}, ok: ${res.ok}`);
+                console.log(`[DEBUG] Response headers:`, res.headers);
+
                 if (res.ok) {
-                    const data = await res.json();
-                    alert(`✅ ${data.message}`);
+                    // Check if response has content
+                    const contentType = res.headers.get('content-type');
+                    console.log(`[DEBUG] Content-Type: ${contentType}`);
+
+                    if (contentType && contentType.includes('application/json')) {
+                        const data = await res.json();
+                        console.log(`[DEBUG] Response data:`, data);
+                        alert(`✅ ${data.message}`);
+                    } else {
+                        // If not JSON, read as text
+                        const text = await res.text();
+                        console.log(`[DEBUG] Response text:`, text);
+                        alert(`✅ ${actionName}成功`);
+                    }
                     updateFrpcStatus(); // Refresh status
                 } else {
                     const err = await res.text();
+                    console.error(`[ERROR] Server error:`, err);
                     throw new Error(err);
                 }
             } catch (err) {
+                console.error(`[ERROR] Fetch failed:`, err);
                 alert(`❌ ${actionName}失败: ${err.message}`);
                 updateFrpcStatus(); // Refresh status anyway
             }
